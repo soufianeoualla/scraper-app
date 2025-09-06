@@ -1,10 +1,16 @@
-import {  useBusinesses } from "@/app/_context/businesses-context";
+import { useBusinesses } from "@/app/_context/businesses-context";
 import React from "react";
 const Th = ({ children }: { children: React.ReactNode }) => {
   return (
     <th className="px-6 py-4 text-left font-medium text-gray-500 w-1/3">
       {children}
     </th>
+  );
+};
+
+const Td = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <td className="px-6 py-4 whitespace-nowrap text-gray-800">{children}</td>
   );
 };
 
@@ -35,18 +41,10 @@ const BusinessesTable = () => {
               key={business.id}
               className="hover:bg-gray-50 transition-colors"
             >
-              <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                {business.businessName}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                {business.email || "N/A"}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                {business.website}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                {business.phone || "N/A"}
-              </td>
+              <Td>{business.businessName}</Td>
+              <Td>{business.email || "N/A"}</Td>
+              <Td>{business.website}</Td>
+              <Td>{business.phone || "N/A"}</Td>
             </tr>
           ))}
         </tbody>

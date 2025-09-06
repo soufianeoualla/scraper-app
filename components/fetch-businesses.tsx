@@ -7,11 +7,13 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import UseScraper from "@/app/_hooks/useScraper";
 import schema from "@/schema";
+import { useBusinesses } from "@/app/_context/businesses-context";
 
 type FormData = z.infer<typeof schema>;
 
 const FetchBusinesses = () => {
   const { onScrape } = UseScraper();
+  const { isPending } = useBusinesses();
   const {
     control,
     handleSubmit,
@@ -75,6 +77,7 @@ const FetchBusinesses = () => {
               <Input
                 {...field}
                 type="text"
+                disabled={isPending}
                 id="searchQuery"
                 placeholder='e.g., "Coffee shops in New York"'
                 className="w-72"
@@ -96,6 +99,7 @@ const FetchBusinesses = () => {
               <Input
                 {...field}
                 type="text"
+                disabled={isPending}
                 id="location"
                 placeholder="[[40.0616373,-85.9393935],[39.8840369,-86.26368029999999]]"
                 className="w-72"
@@ -118,6 +122,7 @@ const FetchBusinesses = () => {
             control={control}
             render={({ field }) => (
               <Input
+                disabled={isPending}
                 onChange={(e) => field.onChange(Number(e.target.value))}
                 type="number"
                 value={field.value || ""}
@@ -136,11 +141,11 @@ const FetchBusinesses = () => {
       </div>
 
       <button
-        disabled={!!Object.keys(errors).length}
+        disabled={!!Object.keys(errors).length || isPending}
         type="submit"
         className="flex justify-center items-center h-12 px-8 rounded-2xl shadow-sm font-bold text-white bg-primary hover:bg-primary/70 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Fetch Businesses
+        {isPending ? "Fetching..." : "Fetch Businesses"}
       </button>
     </form>
   );

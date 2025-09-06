@@ -27,7 +27,7 @@ export const BusinessesProvider = ({
   children: React.ReactNode;
 }) => {
   const [businesses, setBusinesses] = useState<BusinessData[]>([]);
-  const [isPending, setIsPending] = useState(false);
+  const [isPending, setIsPending] = useState(true);
 
   return (
     <BusinessesContext.Provider

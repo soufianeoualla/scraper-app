@@ -5,7 +5,7 @@ import FetchBusinesses from "@/components/fetch-businesses";
 import Checkbox from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import Modal from "@/components/ui/modal";
-import { Download } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { BusinessData, useBusinesses } from "./_context/businesses-context";
@@ -18,7 +18,7 @@ const availableColumns = [
 ];
 
 export default function Home() {
-  const { businesses } = useBusinesses();
+  const { businesses, isPending } = useBusinesses();
   const [selectedColumns, setSelectedColumns] = useState<string[]>([
     "businessName",
     "email",
@@ -32,46 +32,47 @@ export default function Home() {
         : [...prev, columnKey]
     );
   };
-  const handleExportData = (format: "csv" | "json") => {
+  const handleExportData = () => {
     if (selectedColumns.length === 0) {
       toast.error("Please select at least one column to export.");
       return;
     }
 
     const exportData = businesses.map((business) => {
-      const filteredBusiness: any = {};
+      const filteredBusiness: Partial<
+        Record<keyof BusinessData, string | number | null>
+      > = {};
       selectedColumns.forEach((col) => {
-        filteredBusiness[col] = business[col as keyof BusinessData];
+        filteredBusiness[col as keyof BusinessData] =
+          business[col as keyof BusinessData];
       });
       return filteredBusiness;
     });
 
-    if (format === "csv") {
-      const headers = selectedColumns
-        .map((col) => availableColumns.find((c) => c.key === col)?.label || col)
-        .join(",");
+    const headers = selectedColumns
+      .map((col) => availableColumns.find((c) => c.key === col)?.label || col)
+      .join(",");
 
-      const csvContent = [
-        headers,
-        ...exportData.map((row) =>
-          selectedColumns.map((col) => `"${row[col] || ""}"`).join(",")
-        ),
-      ].join("\n");
+    const csvContent = [
+      headers,
+      ...exportData.map((row) =>
+        selectedColumns
+          .map((col) => `"${row[col as keyof typeof row] || ""}"`)
+          .join(",")
+      ),
+    ].join("\n");
 
-      const blob = new Blob([csvContent], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "business-data.csv";
-      a.click();
-      URL.revokeObjectURL(url);
-    }
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "business-data.csv";
+    a.click();
+    URL.revokeObjectURL(url);
 
     setShowModal(false);
     toast.success("Data exported successfully!");
   };
-
-  console.log(businesses);
 
   return (
     <div className="flex flex-col items-center justify-center pt-20 max-w-7xl mx-auto px-4">
@@ -83,6 +84,25 @@ export default function Home() {
       </p>
 
       <FetchBusinesses />
+
+      {isPending && (
+        <div>
+          <div className="p-8">
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+              <div className="text-center space-y-2">
+                <h3 className="text-lg font-medium text-slate-900">
+                  Extracting Business Data
+                </h3>
+                <p className="text-slate-600">
+                  Please wait while we fetch businesses from Google Maps...
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {businesses.length > 0 && (
         <>
           <BusinessesTable />
@@ -129,13 +149,13 @@ export default function Home() {
             </div>
             <div className="flex  justify-center items-center pt-4 gap-x-2">
               <button
-                onClick={() => handleExportData("csv")}
+                onClick={() => setShowModal(false)}
                 className="flex-1 flex gap-2 items-center justify-center border-primary/50 border px-6 h-10 text-gray-900 rounded-2xl font-semibold text-sm"
               >
                 Cancel
               </button>
               <button
-                onClick={() => handleExportData("csv")}
+                onClick={handleExportData}
                 className="flex-1 flex gap-2 items-center justify-center bg-primary px-6 h-10 text-white rounded-2xl font-semibold text-sm"
               >
                 <Download className="h-4 w-4" />

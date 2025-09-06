@@ -1,7 +1,6 @@
 import api from "@/config/axios-instance";
 import toast from "react-hot-toast";
 import { useBusinesses } from "../_context/businesses-context";
-import { useState } from "react";
 
 const UseScraper = () => {
   const { setBusinesses, setIsPending } = useBusinesses();
