@@ -59,8 +59,11 @@ const Pagination = ({
   const endResult = Math.min(currentPage * resultsPerPage, totalResults);
 
   return (
-    <div className="flex flex-col justify-center gap-y-8 items-center text-base mt-10">
+    <div className="flex  justify-between w-full gap-y-8 items-center text-base mt-10">
       {/* Pagination Controls */}
+      <div className="text-gray-600 font-semibold">
+        Showing {startResult} to {endResult} of {totalResults} results
+      </div>
       <div className="flex items-center gap-x-4">
         {/* Previous Button */}
         <button
@@ -101,9 +104,7 @@ const Pagination = ({
           <ChevronRight strokeWidth={1.5} className="w-5 h-5" />
         </button>
       </div>
-      <div className="text-gray-600 font-semibold">
-        Showing {startResult} to {endResult} of {totalResults} results
-      </div>
+     
     </div>
   );
 };
