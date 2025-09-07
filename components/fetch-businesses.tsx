@@ -42,7 +42,7 @@ const FetchBusinesses = () => {
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-10 flex flex-col items-center mb-20"
     >
-      <div className="flex items-start gap-x-10 w-full">
+      <div className="grid grid-cols-4  gap-x-10 w-full">
         {/* API Key */}
         <div>
           <Label htmlFor="apiKey">SERPAPI Key</Label>
@@ -52,7 +52,8 @@ const FetchBusinesses = () => {
             render={({ field }) => (
               <Input
                 {...field}
-                type="text"
+                type="password"
+                disabled={isPending}
                 id="apiKey"
                 placeholder="Enter your API key"
                 className="w-72"

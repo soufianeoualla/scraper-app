@@ -110,15 +110,18 @@ function extractEmails(html: string) {
     )
   );
 
-  // Blacklist patterns (placeholders, staging, file extensions, assets)
+  // Blacklist patterns (placeholders, staging, error tracking, assets)
   const blacklist = [
     /^example@/i, // example@...
     /^user@/i, // user@...
     /^name@mail\.com$/i, // name@mail.com (placeholder)
+    /^info@example\.com$/i, // info@example.com
+    /@example\.com$/i, // example.com domain
     /@mysite\.com$/i, // placeholder domains
     /@domain\.com$/i, // generic test domains
+    /@.*sentry.*\./i, // any sentry (sentry.io, sentry.com, sentry-next.wixpress.com, etc.)
     /@.*sg-host\.com$/i, // WP staging
-    /\.(jpg|jpeg|png|gif|webp)$/i, // images
+    /\.(jpg|jpeg|png|gif|webp)$/i, // image filenames
     /@\d+(\.\d+)?x/i, // @2x, @0.75x, etc.
   ];
 
@@ -225,7 +228,9 @@ const app = new Hono().post("/", zValidator("json", schema), async (c) => {
       }
     }
 
-    return c.json({ ...leads });
+    return c.json({
+      leads: leads.map((l, index) => ({ ...l, id: index + 1 })),
+    });
   } catch (error) {
     console.error("Error in scraper:", error);
     return c.json(

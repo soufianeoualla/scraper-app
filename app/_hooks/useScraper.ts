@@ -27,7 +27,8 @@ const UseScraper = () => {
 
       toast.success("Scraping completed successfully!");
       setIsPending(false);
-      return setBusinesses(response.data);
+      console.log("Scraped data:", response.data);
+      return setBusinesses(response.data.leads);
     } catch (error) {
       setIsPending(false);
       console.error("Error during scraping:", error);

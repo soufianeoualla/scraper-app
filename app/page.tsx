@@ -9,6 +9,7 @@ import { Download, Loader2 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { BusinessData, useBusinesses } from "./_context/businesses-context";
+import Pagination from "@/components/pagination";
 
 const availableColumns = [
   { key: "businessName", label: "Business Name" },
@@ -25,6 +26,7 @@ export default function Home() {
     "website",
   ]);
   const [showModal, setShowModal] = useState(false);
+
   const handleColumnToggle = (columnKey: string) => {
     setSelectedColumns((prev) =>
       prev.includes(columnKey)
@@ -74,6 +76,8 @@ export default function Home() {
     toast.success("Data exported successfully!");
   };
 
+  console.log("businesses", businesses);
+
   return (
     <div className="flex flex-col items-center justify-center pt-20 max-w-7xl mx-auto px-4">
       <h1 className="text-3xl font-bold text-gray-800 mb-2">
@@ -89,7 +93,7 @@ export default function Home() {
         <div>
           <div className="p-8">
             <div className="flex flex-col items-center justify-center space-y-4">
-              <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+              <Loader2 className="h-10 w-10 animate-spin text-primary" />
               <div className="text-center space-y-2">
                 <h3 className="text-lg font-medium text-slate-900">
                   Extracting Business Data
@@ -107,7 +111,7 @@ export default function Home() {
         <>
           <BusinessesTable />
 
-          <div className=" mt-20">
+          <div className=" my-20">
             <button
               onClick={() => setShowModal(true)}
               type="submit"
@@ -118,6 +122,7 @@ export default function Home() {
           </div>
         </>
       )}
+
       <Modal isVisible={showModal} onClose={() => setShowModal(false)}>
         <div className="bg-white rounded-2xl p-6 w-[400px]  space-y-6">
           <div>
