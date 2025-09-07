@@ -3,7 +3,6 @@ import axios from "axios";
 import { Hono } from "hono";
 import * as cheerio from "cheerio";
 import schema from "@/schema";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
 function getDomain(url: string) {
   try {
@@ -24,40 +23,6 @@ function getGoogleMapsMidpointFromString(bboxStr: string): string {
 
   return `@${midLat},${midLng},10z`;
 }
-
-// Example usage:
-const bboxStr = "[[40.0616373,-85.9393935],[39.8840369,-86.26368029999999]]";
-console.log(getGoogleMapsMidpointFromString(bboxStr));
-// Output: "@39.972837,-86.101537,10z"
-
-const CoordsPrompt = (location: string) => {
-  return `Convert the following bounding box into Google Maps midpoint format. The output should be exactly: @LAT,LNG,10z For example: [[40.0616373,-85.9393935],[39.8840369,-86.26368029999999]] → @39.972837,-86.101537,10z Bounding box: ${location}`;
-};
-
-const gemini = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-
-export const generateCoords = async (location: string) => {
-  const prompt = CoordsPrompt(location);
-
-  try {
-    const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    // Make the API call to Gemini
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
-        maxOutputTokens: 60, // Set maximum output tokens
-        temperature: 0.8, // Set generation temperature
-      },
-    });
-
-    return result.response.text();
-  } catch (error) {
-    console.error("Error generating quote with Gemini:", error);
-
-    return "Keep moving forward, one step at a time.";
-  }
-};
 
 async function searchGoogleMaps({
   apiKey,
@@ -132,7 +97,6 @@ async function crawlWebsite(startUrl: string) {
   const visited = new Set();
   const toVisit = [startUrl];
   const emails = new Set();
-  const socialLinks = new Set();
 
   const base = new URL(startUrl).origin;
 
