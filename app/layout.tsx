@@ -9,8 +9,8 @@ const font = Manrope({
   variable: "--font-manrope",
 });
 export const metadata: Metadata = {
-  title: "Google Maps Scraper",
-  description: "Scrape business data from Google Maps with ease.",
+  title: "Google Maps Data Extractor",
+  description: "Extract business emails and websites from Google Maps listings.",
 };
 
 export default function RootLayout({

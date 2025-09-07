@@ -121,7 +121,11 @@ export default function Home() {
               </h4>
               <div className="space-y-4">
                 {availableColumns.map((column) => (
-                  <div key={column.key} className="flex items-center  gap-x-2">
+                  <div
+                    onClick={() => handleColumnToggle(column.key)}
+                    key={column.key}
+                    className="flex items-center  gap-x-2"
+                  >
                     <Checkbox
                       isChecked={selectedColumns.includes(column.key)}
                       onChange={() => handleColumnToggle(column.key)}
