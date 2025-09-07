@@ -5,11 +5,10 @@ import FetchBusinesses from "@/components/fetch-businesses";
 import Checkbox from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import Modal from "@/components/ui/modal";
-import { Download, Loader2 } from "lucide-react";
+import { Download } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { BusinessData, useBusinesses } from "./_context/businesses-context";
-import Pagination from "@/components/pagination";
 
 const availableColumns = [
   { key: "businessName", label: "Business Name" },
@@ -19,7 +18,7 @@ const availableColumns = [
 ];
 
 export default function Home() {
-  const { businesses, isPending } = useBusinesses();
+  const { businesses } = useBusinesses();
   const [selectedColumns, setSelectedColumns] = useState<string[]>([
     "businessName",
     "email",
@@ -88,24 +87,6 @@ export default function Home() {
       </p>
 
       <FetchBusinesses />
-
-      {isPending && (
-        <div>
-          <div className="p-8">
-            <div className="flex flex-col items-center justify-center space-y-4">
-              <Loader2 className="h-10 w-10 animate-spin text-primary" />
-              <div className="text-center space-y-2">
-                <h3 className="text-lg font-medium text-slate-900">
-                  Extracting Business Data
-                </h3>
-                <p className="text-slate-600">
-                  Please wait while we fetch businesses from Google Maps...
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {businesses.length > 0 && (
         <>

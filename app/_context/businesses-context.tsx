@@ -15,6 +15,11 @@ interface BusinessesContextType {
   setBusinesses: React.Dispatch<React.SetStateAction<BusinessData[]>>;
   isPending: boolean;
   setIsPending: React.Dispatch<React.SetStateAction<boolean>>;
+  progress: number;
+  setProgress: React.Dispatch<React.SetStateAction<number>>;
+  query: string;
+  setQuery: React.Dispatch<React.SetStateAction<string>>;
+
 }
 
 const BusinessesContext = createContext<BusinessesContextType | undefined>(
@@ -28,10 +33,21 @@ export const BusinessesProvider = ({
 }) => {
   const [businesses, setBusinesses] = useState<BusinessData[]>([]);
   const [isPending, setIsPending] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [query, setQuery] = useState('');
 
   return (
     <BusinessesContext.Provider
-      value={{ businesses, setBusinesses, isPending, setIsPending }}
+      value={{
+        businesses,
+        setBusinesses,
+        isPending,
+        setIsPending,
+        progress,
+        setProgress,
+        query,
+        setQuery,
+      }}
     >
       {children}
     </BusinessesContext.Provider>

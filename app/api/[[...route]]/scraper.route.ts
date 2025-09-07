@@ -2,25 +2,23 @@ import { zValidator } from "@hono/zod-validator";
 import axios from "axios";
 import { Hono } from "hono";
 import * as cheerio from "cheerio";
+import { streamSSE } from "hono/streaming";
 import schema from "@/schema";
 
 function getDomain(url: string) {
   try {
     const u = new URL(url);
-    return u.hostname.replace(/^www\./, ""); // remove "www."
+    return u.hostname.replace(/^www\./, "");
   } catch {
-    return url; // fallback if URL is invalid
+    return url;
   }
 }
+
 function getGoogleMapsMidpointFromString(bboxStr: string): string {
-  // Parse the string into a 2D number array
   const bbox: [[number, number], [number, number]] = JSON.parse(bboxStr);
-
   const [[lat1, lng1], [lat2, lng2]] = bbox;
-
   const midLat = +((lat1 + lat2) / 2).toFixed(6);
   const midLng = +((lng1 + lng2) / 2).toFixed(6);
-
   return `@${midLat},${midLng},10z`;
 }
 
@@ -68,6 +66,7 @@ async function searchGoogleMaps({
 
   return businesses;
 }
+
 function extractEmails(html: string) {
   const allEmails = Array.from(
     new Set(
@@ -75,19 +74,18 @@ function extractEmails(html: string) {
     )
   );
 
-  // Blacklist patterns (placeholders, staging, error tracking, assets)
   const blacklist = [
-    /^example@/i, // example@...
-    /^user@/i, // user@...
-    /^name@mail\.com$/i, // name@mail.com (placeholder)
-    /^info@example\.com$/i, // info@example.com
-    /@example\.com$/i, // example.com domain
-    /@mysite\.com$/i, // placeholder domains
-    /@domain\.com$/i, // generic test domains
-    /@.*sentry.*\./i, // any sentry (sentry.io, sentry.com, sentry-next.wixpress.com, etc.)
-    /@.*sg-host\.com$/i, // WP staging
-    /\.(jpg|jpeg|png|gif|webp)$/i, // image filenames
-    /@\d+(\.\d+)?x/i, // @2x, @0.75x, etc.
+    /^example@/i,
+    /^user@/i,
+    /^name@mail\.com$/i,
+    /^info@example\.com$/i,
+    /@example\.com$/i,
+    /@mysite\.com$/i,
+    /@domain\.com$/i,
+    /@.*sentry.*\./i,
+    /@.*sg-host\.com$/i,
+    /\.(jpg|jpeg|png|gif|webp)$/i,
+    /@\d+(\.\d+)?x/i,
   ];
 
   return allEmails.filter((email) => !blacklist.some((rx) => rx.test(email)));
@@ -107,13 +105,8 @@ async function crawlWebsite(startUrl: string) {
 
     try {
       const { data: html } = await axios.get(url, { timeout: 10000 });
-
-      // collect emails
       extractEmails(html).forEach((e) => emails.add(e));
 
-      // optionally collect socials
-
-      // add internal links to crawl
       const $ = cheerio.load(html);
       $("a[href]").each((_, el) => {
         const href = $(el).attr("href");
@@ -122,7 +115,7 @@ async function crawlWebsite(startUrl: string) {
         let fullUrl;
         try {
           fullUrl = new URL(href, base).href;
-        } catch (_) {
+        } catch {
           return;
         }
 
@@ -130,8 +123,8 @@ async function crawlWebsite(startUrl: string) {
           toVisit.push(fullUrl);
         }
       });
-    } catch (_) {
-      // skip errors silently
+    } catch {
+      // ignore errors
     }
   }
 
@@ -140,68 +133,73 @@ async function crawlWebsite(startUrl: string) {
   };
 }
 
-const app = new Hono().post("/", zValidator("json", schema), async (c) => {
-  try {
-    const { apiKey, searchQuery, pagesNumber, location } = c.req.valid("json");
-    console.log(`🚀 Starting scraper for "${searchQuery}" in "${location}"`);
+const app = new Hono().get("/", zValidator("query", schema), async (c) => {
+  const { apiKey, searchQuery, pagesNumber, location } = c.req.valid("query");
+  const ll = getGoogleMapsMidpointFromString(location);
 
-    const ll = getGoogleMapsMidpointFromString(location);
+  return streamSSE(c, async (stream) => {
+    try {
+      const results = await searchGoogleMaps({
+        apiKey,
+        searchQuery,
+        pagesNumber,
+        ll,
+      });
 
-    const results = await searchGoogleMaps({
-      apiKey,
-      searchQuery,
-      pagesNumber,
-      ll,
-    });
+      let id = 1;
 
-    const leads = [];
+      for (let i = 0; i < results.length; i++) {
+        const biz = results[i];
+        const percent = Math.round(((i + 1) / results.length) * 100);
 
-    for (const biz of results) {
-      console.log(`🌐 Crawling ${biz.website}`);
-      try {
-        const { emails } = await crawlWebsite(biz.website);
+        await stream.writeSSE({
+          event: "progress",
+          data: JSON.stringify({
+            status: `Crawling ${biz.website}`,
+            percent,
+          }),
+        });
 
-        if (emails.length) {
-          // push each found email separately
-          for (const email of emails) {
-            leads.push({
-              name: biz.name,
-              website: getDomain(biz.website),
-              phone: biz.phone,
-              email,
-            });
-          }
-        } else {
-          // still push with empty email
-          leads.push({
-            name: biz.name,
-            website: getDomain(biz.website),
-            phone: biz.phone,
-            email: "",
+        try {
+          const { emails } = await crawlWebsite(biz.website);
+          const leads = emails.length
+            ? emails.map((email) => ({
+                id: id++,
+                name: biz.name,
+                website: getDomain(biz.website),
+                phone: biz.phone,
+                email,
+              }))
+            : [
+                {
+                  id: id++,
+                  name: biz.name,
+                  website: getDomain(biz.website),
+                  phone: biz.phone,
+                  email: "",
+                },
+              ];
+
+          await stream.writeSSE({
+            event: "lead",
+            data: JSON.stringify(leads),
+          });
+        } catch {
+          await stream.writeSSE({
+            event: "error",
+            data: JSON.stringify({ website: biz.website }),
           });
         }
-      } catch (err) {
-        console.log(`❌ Failed to crawl ${biz.website}`);
-        // push with empty email in case of error
-        leads.push({
-          name: biz.name,
-          website: getDomain(biz.website),
-          phone: biz.phone,
-          email: "",
-        });
       }
-    }
 
-    return c.json({
-      leads: leads.map((l, index) => ({ ...l, id: index + 1 })),
-    });
-  } catch (error) {
-    console.error("Error in scraper:", error);
-    return c.json(
-      { message: "Internal server error. Please try again later." },
-      500
-    );
-  }
+      await stream.writeSSE({ event: "done", data: "Scraping finished" });
+    } catch (err) {
+      await stream.writeSSE({
+        event: "error",
+        data: JSON.stringify({ message: "Fatal error" }),
+      });
+    }
+  });
 });
 
 export default app;
