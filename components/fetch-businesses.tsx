@@ -24,7 +24,6 @@ const FetchBusinesses = () => {
     //@ts-expect-error pagesNumber Should be number
     resolver: zodResolver(schema),
     defaultValues: {
-      apiKey: "",
       searchQuery: "",
       pagesNumber: undefined,
       location: "",
@@ -34,7 +33,6 @@ const FetchBusinesses = () => {
   const onSubmit = (data: FormData) => {
     setQuery(data.searchQuery);
     onScrape({
-      apiKey: data.apiKey,
       searchQuery: data.searchQuery,
       pagesNumber: data.pagesNumber,
       location: data.location,
@@ -48,32 +46,7 @@ const FetchBusinesses = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-10 flex flex-col items-center mb-20"
       >
-        <div className="grid xl:grid-cols-4  gap-10 w-full">
-          {/* API Key */}
-          <div>
-            <Label htmlFor="apiKey">SERPAPI Key</Label>
-            <Controller
-              name="apiKey"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  type="password"
-                  disabled={isPending}
-                  id="apiKey"
-                  placeholder="Enter your API key"
-                  className="w-72"
-                />
-              )}
-            />
-            {errors.apiKey && (
-              <p className="text-red-500 text-xs  mt-2 font-medium">
-                {" "}
-                * {errors.apiKey.message}
-              </p>
-            )}
-          </div>
-
+        <div className="grid xl:grid-cols-3  gap-10 w-full">
           {/* Search Query */}
           <div>
             <Label htmlFor="searchQuery">Search Query</Label>

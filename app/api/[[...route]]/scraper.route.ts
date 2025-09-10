@@ -134,7 +134,8 @@ async function crawlWebsite(startUrl: string) {
 }
 
 const app = new Hono().get("/", zValidator("query", schema), async (c) => {
-  const { apiKey, searchQuery, pagesNumber, location } = c.req.valid("query");
+  const { searchQuery, pagesNumber, location } = c.req.valid("query");
+  const apiKey = process.env.SERPAPI_KEY!;
   const ll = getGoogleMapsMidpointFromString(location);
 
   return streamSSE(c, async (stream) => {

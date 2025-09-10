@@ -7,12 +7,10 @@ const UseScraper = () => {
   const esRef = useRef<EventSource | null>(null); // store EventSource here
 
   const onScrape = async ({
-    apiKey,
     searchQuery,
     pagesNumber,
     location,
   }: {
-    apiKey: string;
     searchQuery: string;
     pagesNumber: number;
     location: string;
@@ -23,7 +21,7 @@ const UseScraper = () => {
 
     return new Promise<void>((resolve, reject) => {
       esRef.current = new EventSource(
-        `/api/scraper?apiKey=${apiKey}&searchQuery=${encodeURIComponent(
+        `/api/scraper?searchQuery=${encodeURIComponent(
           searchQuery
         )}&pagesNumber=${pagesNumber}&location=${encodeURIComponent(location)}`
       );
