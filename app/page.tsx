@@ -121,11 +121,7 @@ export default function Home() {
               </h4>
               <div className="space-y-4">
                 {availableColumns.map((column) => (
-                  <div
-                    onClick={() => handleColumnToggle(column.key)}
-                    key={column.key}
-                    className="flex items-center  gap-x-2"
-                  >
+                  <div key={column.key} className="flex items-center  gap-x-2">
                     <Checkbox
                       isChecked={selectedColumns.includes(column.key)}
                       onChange={() => handleColumnToggle(column.key)}
@@ -140,13 +136,13 @@ export default function Home() {
             <div className="flex  justify-center items-center pt-4 gap-x-2">
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 flex gap-2 items-center justify-center border-primary/50 border px-6 h-10 text-gray-900 rounded-2xl font-semibold text-sm"
+                className="flex-1 flex gap-2 items-center justify-center border-primary/50 border px-6 h-10 text-gray-900 rounded-2xl font-semibold text-sm hover:bg-gray-50 cursor-pointer transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleExportData}
-                className="flex-1 flex gap-2 items-center justify-center bg-primary px-6 h-10 text-white rounded-2xl font-semibold text-sm"
+                className="flex-1 flex gap-2 items-center justify-center bg-primary px-6 h-10 text-white rounded-2xl font-semibold text-sm hover:bg-primary/80 transition-colors cursor-pointer"
               >
                 <Download className="h-4 w-4" />
                 Export CSV

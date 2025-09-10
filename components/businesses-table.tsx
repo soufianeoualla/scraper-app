@@ -11,7 +11,7 @@ const Th = ({ children }: { children: React.ReactNode }) => {
 
 const Td = ({ children }: { children: React.ReactNode }) => {
   return (
-    <td className="px-6 py-4 whitespace-nowrap text-gray-800">{children}</td>
+    <td className="px-6 py-4 whitespace-nowrap text-gray-800 ">{children}</td>
   );
 };
 
@@ -29,7 +29,7 @@ const BusinessesTable = () => {
   const lastPage = pageNumbers.length;
   return (
     <>
-      <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm h-[585px] w-[1280px] ">
+      <div className="overflow-auto rounded-2xl border border-gray-200 bg-white shadow-sm h-[585px] w-[1280px] ">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-slate-50">
@@ -43,10 +43,18 @@ const BusinessesTable = () => {
             {currentItems.map((business) => (
               <tr
                 key={business.id}
-                className="hover:bg-gray-50 transition-colors"
+                className="hover:bg-gray-50 transition-colors "
               >
                 <Td>{business.name}</Td>
-                <Td>{business.email || "N/A"}</Td>
+                <Td>
+                  {business.email
+                    ? business.email.split(",").map((e, i) => (
+                        <div key={i} className="break-words">
+                          {e.trim()}
+                        </div>
+                      ))
+                    : "N/A"}
+                </Td>
                 <Td>{business.website}</Td>
                 <Td>{business.phone || "N/A"}</Td>
               </tr>

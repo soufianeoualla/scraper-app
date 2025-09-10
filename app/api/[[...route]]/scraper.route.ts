@@ -159,26 +159,17 @@ const app = new Hono().get("/", zValidator("query", schema), async (c) => {
             percent,
           }),
         });
-
         try {
           const { emails } = await crawlWebsite(biz.website);
-          const leads = emails.length
-            ? emails.map((email) => ({
-                id: id++,
-                name: biz.name,
-                website: getDomain(biz.website),
-                phone: biz.phone,
-                email,
-              }))
-            : [
-                {
-                  id: id++,
-                  name: biz.name,
-                  website: getDomain(biz.website),
-                  phone: biz.phone,
-                  email: "",
-                },
-              ];
+          const leads = [
+            {
+              id: id++,
+              name: biz.name,
+              website: getDomain(biz.website),
+              phone: biz.phone,
+              email: emails.join(", "),
+            },
+          ];
 
           await stream.writeSSE({
             event: "lead",
